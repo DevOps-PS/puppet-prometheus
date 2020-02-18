@@ -39,6 +39,8 @@
 #  Whether to enable the service from puppet (default true)
 # @param service_ensure
 #  State ensured for the service (default 'running')
+# @param service_name
+#  Name of the varnish exporter service (default 'statsd_exporter')
 # @param user
 #  User which runs the service
 # @param version
@@ -49,6 +51,7 @@ class prometheus::varnish_exporter(
   String $group,
   String $package_ensure,
   String $package_name,
+  String $service_name,
   String $user,
   String $version,
   Prometheus::Uri $download_url_base,
@@ -74,12 +77,12 @@ class prometheus::varnish_exporter(
 
   $real_download_url = pick($download_url,"${download_url_base}/download/${version}/${package_name}-${version}.${os}-${arch}.${download_extension}")
   $notify_service = $restart_on_change ? {
-    true    => Service[$package_name],
+    true    => Service[$service_name],
     default => undef,
   }
 
   $options = " ${extra_options}"
-  prometheus::daemon { $package_name:
+  prometheus::daemon { $service_name:
     install_method     => $install_method,
     version            => $version,
     download_extension => $download_extension,

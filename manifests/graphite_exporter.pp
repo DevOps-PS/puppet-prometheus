@@ -37,6 +37,8 @@
 #  Whether to enable the service from puppet (default true)
 # @param service_ensure
 #  State ensured for the service (default 'running')
+# @param service_name
+#  Name of the graphite exporter service (default 'graphite_exporter')
 # @param user
 #  User which runs the service
 # @param version
@@ -47,6 +49,7 @@ class prometheus::graphite_exporter (
   String $group,
   String $package_ensure,
   String $package_name,
+  String $service_name,
   String $user,
   String $version,
   String $options,
@@ -72,11 +75,11 @@ class prometheus::graphite_exporter (
   $real_download_url = pick($download_url,"${download_url_base}/download/v${version}/${package_name}-${version}.${os}-${arch}.${download_extension}")
 
   $notify_service = $restart_on_change ? {
-    true    => Service['graphite_exporter'],
+    true    => Service[$service_name],
     default => undef,
   }
 
-  prometheus::daemon { 'graphite_exporter':
+  prometheus::daemon { $service_name:
     install_method     => $install_method,
     version            => $version,
     download_extension => $download_extension,

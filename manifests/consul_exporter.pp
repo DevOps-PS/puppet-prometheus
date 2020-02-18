@@ -45,6 +45,8 @@
 #  Whether to enable the service from puppet (default true)
 # @param service_ensure
 #  State ensured for the service (default 'running')
+# @param service_name
+#  Name of the consul exporter service (default 'consul_exporter')
 # @param user
 #  User which runs the service
 # @param version
@@ -63,6 +65,7 @@ class prometheus::consul_exporter (
   String $log_level,
   String $package_ensure,
   String $package_name,
+  String $service_name,
   String $user,
   String $version,
   String $web_listen_address,
@@ -105,7 +108,7 @@ class prometheus::consul_exporter (
   }
 
   $notify_service = $restart_on_change ? {
-    true    => Service['consul_exporter'],
+    true    => Service[$service_name],
     default => undef,
   }
 
@@ -115,7 +118,7 @@ class prometheus::consul_exporter (
     $options = "--consul.server=${consul_server} ${real_consul_health_summary} --web.listen-address=${web_listen_address} --web.telemetry-path=${web_telemetry_path} --log.level=${log_level} ${extra_options}"
   }
 
-  prometheus::daemon { 'consul_exporter':
+  prometheus::daemon { $service_name:
     install_method     => $install_method,
     version            => $version,
     download_extension => $download_extension,

@@ -41,6 +41,8 @@
 #  Whether to enable the service from puppet (default true)
 # @param service_ensure
 #  State ensured for the service (default 'running')
+# @param service_name
+#  Name of the nginx-vts exporter service (default 'nginx-vts-exporter')
 # @param user
 #  User which runs the service
 # @param version
@@ -53,6 +55,7 @@ class prometheus::nginx_vts_exporter(
   String           $group,
   String           $package_ensure,
   String           $package_name,
+  String           $service_name,
   String           $user,
   String           $version,
   Boolean          $purge_config_dir  = true,
@@ -77,13 +80,13 @@ class prometheus::nginx_vts_exporter(
 
   $real_download_url = pick($download_url,"${download_url_base}/download/v${version}/${package_name}-${version}.${os}-${arch}.${download_extension}")
   $notify_service = $restart_on_change ? {
-    true    => Service['nginx-vts-exporter'],
+    true    => Service[$service_name],
     default => undef,
   }
 
   $options = "-nginx.scrape_uri=\"${nginx_scrape_uri}\" ${extra_options}"
 
-  prometheus::daemon { 'nginx-vts-exporter':
+  prometheus::daemon { $service_name:
     install_method     => $install_method,
     version            => $version,
     download_extension => $download_extension,

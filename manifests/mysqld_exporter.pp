@@ -54,6 +54,8 @@
 #  Whether to enable the service from puppet (default true)
 # @param service_ensure
 #  State ensured for the service (default 'running')
+# @param service_name
+#  Name of the mysqld exporter service (default 'mysqld_exporter')
 # @param user
 #  User which runs the service
 # @param version
@@ -65,6 +67,7 @@ class prometheus::mysqld_exporter (
   String $group,
   String $package_ensure,
   String $package_name,
+  String $service_name,
   String $user,
   String $version,
   Stdlib::Absolutepath $cnf_config_path           = '/etc/.my.cnf',
@@ -97,7 +100,7 @@ class prometheus::mysqld_exporter (
   #Please provide the download_url for versions < 0.9.0
   $real_download_url = pick($download_url,"${download_url_base}/download/v${version}/${package_name}-${version}.${os}-${arch}.${download_extension}")
   $notify_service = $restart_on_change ? {
-    true    => Service['mysqld_exporter'],
+    true    => Service[$service_name],
     default => undef,
   }
 
@@ -126,7 +129,7 @@ class prometheus::mysqld_exporter (
   } else {
     $options = "--config.my-cnf=${cnf_config_path} ${extra_options}"
   }
-  prometheus::daemon { 'mysqld_exporter':
+  prometheus::daemon { $service_name:
     install_method     => $install_method,
     version            => $version,
     download_extension => $download_extension,

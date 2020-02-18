@@ -47,6 +47,8 @@
 #  Whether to enable the service from puppet (default true)
 # @param service_ensure
 #  State ensured for the service (default 'running')
+# @param service_name
+#  Name of the beanstalkd exporter service (default 'beanstalkd_exporter')
 # @param user
 #  User which runs the service
 # @param version
@@ -58,6 +60,7 @@ class prometheus::beanstalkd_exporter (
   String $group,
   String $package_ensure,
   String $package_name,
+  String $service_name,
   String $user,
   String $version,
   String $config,
@@ -88,7 +91,7 @@ class prometheus::beanstalkd_exporter (
   $real_download_url = pick($download_url,"${download_url_base}/download/${version}/${package_name}-${version}.${os}-${arch}.${download_extension}")
 
   $notify_service = $restart_on_change ? {
-    true    => Service['beanstalkd_exporter'],
+    true    => Service[$service_name],
     default => undef,
   }
 
@@ -97,15 +100,15 @@ class prometheus::beanstalkd_exporter (
   file { $config:
     ensure  => file,
     content => $beanstalkd_address,
-    before  => Prometheus::Daemon['beanstalkd_exporter'],
+    before  => Prometheus::Daemon[$service_name],
   }
 
   file { $mapping_config:
     ensure => file,
-    before => Prometheus::Daemon['beanstalkd_exporter'],
+    before => Prometheus::Daemon[$service_name],
   }
 
-  prometheus::daemon { 'beanstalkd_exporter':
+  prometheus::daemon { $service_name:
     install_method     => $install_method,
     version            => $version,
     download_extension => $download_extension,

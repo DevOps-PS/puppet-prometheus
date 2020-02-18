@@ -39,6 +39,8 @@
 #  Whether to enable the service from puppet (default true)
 # @param service_ensure
 #  State ensured for the service (default 'running')
+# @param service_name
+#  Name of the rabbitmq exporter service (default 'rabbitmq_exporter')
 # @param user
 #  User which runs the service
 # @param version
@@ -68,6 +70,7 @@ class prometheus::rabbitmq_exporter (
   String $group,
   String $package_ensure,
   String $package_name,
+  String $service_name,
   String $download_extension,
   String $user,
   String $version,
@@ -101,7 +104,7 @@ class prometheus::rabbitmq_exporter (
 
   $real_download_url    = pick($download_url, "${download_url_base}/download/v${version}/${package_name}-${version}.${os}-${arch}.${download_extension}")
   $notify_service = $restart_on_change ? {
-    true    => Service['rabbitmq_exporter'],
+    true    => Service[$service_name],
     default => undef,
   }
 
@@ -117,7 +120,7 @@ class prometheus::rabbitmq_exporter (
 
   $real_env_vars = merge($env_vars, $extra_env_vars)
 
-  prometheus::daemon { 'rabbitmq_exporter':
+  prometheus::daemon { $service_name:
     install_method     => $install_method,
     version            => $version,
     download_extension => $download_extension,
